@@ -17,6 +17,8 @@ else
     "tree-sitter/tree-sitter-python"
     "tree-sitter/tree-sitter-rust"
     "tree-sitter/tree-sitter-typescript"
+    "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown"
+    "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown-inline"
   )
 fi
 
@@ -34,30 +36,53 @@ if [[ "$WORK_REAL" != "$ROOT_REAL/"* || "$OUT_REAL" != "$ROOT_REAL/"* ]]; then
   exit 1
 fi
 
-rm -rf "$WORK_REAL" "$OUT_REAL"
+rm -rf "$OUT_REAL"
 mkdir -p "$WORK_REAL" "$OUT_REAL"
 
 WORK_DIR="$WORK_REAL"
 OUT_DIR="$OUT_REAL"
 
-for repo_path in "${REPOSITORIES[@]}"; do
-  language_name="${repo_path##*/}"
+for entry in "${REPOSITORIES[@]}"; do
+  # entry is org/repo  or  org/repo/subfolder
+  IFS='/' read -ra parts <<<"$entry"
+  repo_org="${parts[0]}"
+  repo_name="${parts[1]}"
+  repo_subdir="${parts[2]:-}"
+
+  repo_gh_path="$repo_org/$repo_name"
+
+  # language name is derived from the last path component
+  language_name="${entry##*/}"
   language_name="${language_name#tree-sitter-}"
 
-  echo "Building $repo_path -> $language_name"
+  echo "Building $entry -> $language_name"
 
-  repo_dir="$WORK_DIR/$language_name"
+  repo_dir="$WORK_DIR/$repo_name"
   package_dir="$WORK_DIR/package-$language_name"
 
-  if ! git clone --depth 1 "https://github.com/${repo_path}.git" "$repo_dir"; then
-    echo "Failed to clone repository $repo_path" >&2
-    exit 1
+  if [[ -d "$repo_dir/.git" ]]; then
+    echo "Updating existing clone of $repo_gh_path"
+    if ! git -C "$repo_dir" pull; then
+      echo "Failed to update repository $repo_gh_path" >&2
+      exit 1
+    fi
+  else
+    if ! git clone --depth 1 "https://github.com/${repo_gh_path}.git" "$repo_dir"; then
+      echo "Failed to clone repository $repo_gh_path" >&2
+      exit 1
+    fi
   fi
 
-  pushd "$repo_dir" >/dev/null
+  if [[ -n "$repo_subdir" ]]; then
+    build_dir="$repo_dir/$repo_subdir"
+  else
+    build_dir="$repo_dir"
+  fi
+
+  pushd "$build_dir" >/dev/null
   echo "Building wasm parser for $language_name"
   if ! tree-sitter build --wasm; then
-    echo "Failed to build wasm parser for $language_name ($repo_path)" >&2
+    echo "Failed to build wasm parser for $language_name ($entry)" >&2
     exit 1
   fi
 
@@ -67,7 +92,7 @@ for repo_path in "${REPOSITORIES[@]}"; do
     if [[ "${#wasm_files[@]}" -gt 0 ]]; then
       wasm_details="${wasm_files[*]}"
     fi
-    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}: $wasm_details" >&2
+    echo "Expected exactly one wasm file for $language_name ($entry), found ${#wasm_files[@]}: $wasm_details" >&2
     exit 1
   fi
   wasm_file="${wasm_files[0]}"
