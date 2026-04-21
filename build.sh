@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$ROOT_DIR/.build"
 OUT_DIR="$ROOT_DIR/artifacts"
 
+chmod +x "$ROOT_DIR/tree-sitter-cli/tree-sitter"
+
 if [[ -n "${TREE_SITTER_REPOSITORIES:-}" ]]; then
   read -r -a REPOSITORIES <<<"$TREE_SITTER_REPOSITORIES"
 else
