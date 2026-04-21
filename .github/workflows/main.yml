@@ -19,18 +19,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache
+        id: cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache
+        with:
+          path: |
+            emsdk
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Install Zip
+        run: |
+          sudo apt-get install -y zip
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install Emscripten
-        run: |
-          sudo apt-get install -y emscripten zip
+      - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        name: Download emscripten
+        run: git clone https://github.com/emscripten-core/emsdk.git
+      - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        name: Install emscripten
+        run: cd emsdk; ./emsdk install 4.0.10; ./emsdk activate 4.0.10; cd ..
+      - run: |
+          echo "${GITHUB_WORKSPACE}/emsdk" >> $GITHUB_PATH
+          echo "${GITHUB_WORKSPACE}/emsdk/node/22.16.0_64bit/bin" >> $GITHUB_PATH
+          echo "${GITHUB_WORKSPACE}/emsdk/upstream/emscripten" >> $GITHUB_PATH
 
       - name: Install tree-sitter CLI
-        run: wget -O tree-sitter-cli.zip https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.8/tree-sitter-cli-linux-x64.zip
-
-      - name: Extract treesitter cli
-        run: unzip tree-sitter-cli.zip -d tree-sitter-cli
+        run: |
+          wget -O tree-sitter-cli.zip https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.8/tree-sitter-cli-linux-x64.zip
+          unzip tree-sitter-cli.zip -d tree-sitter-cli
 
       - run: export PATH="tree-sitter-cli:$PATH"
 
