@@ -55,6 +55,7 @@ for repo_path in "${REPOSITORIES[@]}"; do
   fi
 
   pushd "$repo_dir" >/dev/null
+  echo "Building wasm parser for $language_name"
   if ! tree-sitter build --wasm; then
     echo "Failed to build wasm parser for $language_name ($repo_path)" >&2
     exit 1
@@ -80,9 +81,9 @@ for repo_path in "${REPOSITORIES[@]}"; do
   fi
 
   if [[ -d "$package_dir/queries" ]]; then
-    (cd "$package_dir" && zip -r "$OUT_DIR/${language_name}.zip" "$wasm_file_name" queries)
+    (cd "$package_dir" && tar czf "$OUT_DIR/${language_name}.tar.gz" "$wasm_file_name" queries)
   else
-    (cd "$package_dir" && zip -r "$OUT_DIR/${language_name}.zip" "$wasm_file_name")
+    (cd "$package_dir" && tar czf "$OUT_DIR/${language_name}.tar.gz" "$wasm_file_name")
   fi
   popd >/dev/null
 done
