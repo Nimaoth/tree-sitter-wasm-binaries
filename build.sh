@@ -20,14 +20,14 @@ else
   )
 fi
 
-if [[ -z "$WORK_DIR" || -z "$OUT_DIR" || "$WORK_DIR" == "/" || "$OUT_DIR" == "/" ]]; then
-  echo "Refusing to remove unsafe build directories" >&2
-  exit 1
-fi
-
 ROOT_REAL="$(realpath "$ROOT_DIR")"
 WORK_REAL="$(realpath -m "$WORK_DIR")"
 OUT_REAL="$(realpath -m "$OUT_DIR")"
+
+if [[ -z "$WORK_REAL" || -z "$OUT_REAL" || "$WORK_REAL" == "/" || "$OUT_REAL" == "/" ]]; then
+  echo "Refusing to remove unsafe build directories" >&2
+  exit 1
+fi
 
 if [[ "$WORK_REAL" != "$ROOT_REAL/"* || "$OUT_REAL" != "$ROOT_REAL/"* ]]; then
   echo "Build directories must be inside repository root" >&2
@@ -55,7 +55,10 @@ for repo_path in "${REPOSITORIES[@]}"; do
   fi
 
   pushd "$repo_dir" >/dev/null
-  tree-sitter build --wasm
+  if ! tree-sitter build --wasm; then
+    echo "Failed to build wasm parser for $language_name ($repo_path)" >&2
+    exit 1
+  fi
 
   mapfile -t wasm_files < <(find . -maxdepth 2 -type f -name '*.wasm' -print)
   if [[ "${#wasm_files[@]}" -ne 1 ]]; then
