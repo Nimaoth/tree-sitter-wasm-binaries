@@ -80,7 +80,7 @@ for entry in "${REPOSITORIES[@]}"; do
 
   pushd "$build_dir" >/dev/null
   echo "Building wasm parser for $language_name"
-  if ! tree-sitter build --wasm; then
+  if ! ./tree-sitter-cli/tree-sitter build --wasm; then
     echo "Failed to build wasm parser for $language_name ($entry)" >&2
     exit 1
   fi
