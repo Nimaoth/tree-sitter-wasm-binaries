@@ -5,6 +5,11 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$ROOT_DIR/.build"
 OUT_DIR="$ROOT_DIR/artifacts"
 
+if [[ -z "$ROOT_DIR" ]]; then
+  echo "ROOT_DIR must not be empty" >&2
+  exit 1
+fi
+
 if [[ -n "${TREE_SITTER_REPOSITORIES:-}" ]]; then
   read -r -a REPOSITORIES <<<"$TREE_SITTER_REPOSITORIES"
 else
@@ -25,13 +30,20 @@ if [[ -z "$WORK_DIR" || -z "$OUT_DIR" || "$WORK_DIR" == "/" || "$OUT_DIR" == "/"
   exit 1
 fi
 
-if [[ "$WORK_DIR" != "$ROOT_DIR/"* || "$OUT_DIR" != "$ROOT_DIR/"* ]]; then
+ROOT_REAL="$(realpath "$ROOT_DIR")"
+WORK_REAL="$(realpath -m "$WORK_DIR")"
+OUT_REAL="$(realpath -m "$OUT_DIR")"
+
+if [[ "$WORK_REAL" != "$ROOT_REAL/"* || "$OUT_REAL" != "$ROOT_REAL/"* ]]; then
   echo "Build directories must be inside repository root" >&2
   exit 1
 fi
 
-rm -rf "$WORK_DIR" "$OUT_DIR"
-mkdir -p "$WORK_DIR" "$OUT_DIR"
+rm -rf "$WORK_REAL" "$OUT_REAL"
+mkdir -p "$WORK_REAL" "$OUT_REAL"
+
+WORK_DIR="$WORK_REAL"
+OUT_DIR="$OUT_REAL"
 
 for repo_path in "${REPOSITORIES[@]}"; do
   language_name="${repo_path##*/}"
@@ -42,7 +54,10 @@ for repo_path in "${REPOSITORIES[@]}"; do
   repo_dir="$WORK_DIR/$language_name"
   package_dir="$WORK_DIR/package-$language_name"
 
-  git clone --depth 1 "https://github.com/${repo_path}.git" "$repo_dir"
+  if ! git clone --depth 1 "https://github.com/${repo_path}.git" "$repo_dir"; then
+    echo "Failed to clone repository $repo_path" >&2
+    exit 1
+  fi
 
   pushd "$repo_dir" >/dev/null
   tree-sitter build --wasm
