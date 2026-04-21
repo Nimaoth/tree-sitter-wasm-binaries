@@ -37,19 +37,25 @@ for repo_path in "${REPOSITORIES[@]}"; do
   pushd "$repo_dir" >/dev/null
   tree-sitter build --wasm
 
-  wasm_file="$(find . -maxdepth 2 -type f -name '*.wasm' | head -n 1 || true)"
-  if [[ -z "$wasm_file" ]]; then
-    echo "No wasm file generated for $language_name ($repo_path)" >&2
+  mapfile -t wasm_files < <(find . -maxdepth 2 -type f -name '*.wasm' -print)
+  if [[ "${#wasm_files[@]}" -ne 1 ]]; then
+    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}" >&2
     exit 1
   fi
+  wasm_file="${wasm_files[0]}"
+  wasm_file_name="$(basename "$wasm_file")"
 
   mkdir -p "$package_dir"
-  cp "$wasm_file" "$package_dir/"
+  cp "$wasm_file" "$package_dir/$wasm_file_name"
 
   if [[ -d queries ]]; then
     cp -R queries "$package_dir/"
   fi
 
-  (cd "$package_dir" && zip -r "$OUT_DIR/${language_name}.zip" .)
+  if [[ -d "$package_dir/queries" ]]; then
+    (cd "$package_dir" && zip -r "$OUT_DIR/${language_name}.zip" "$wasm_file_name" queries)
+  else
+    (cd "$package_dir" && zip -r "$OUT_DIR/${language_name}.zip" "$wasm_file_name")
+  fi
   popd >/dev/null
 done
