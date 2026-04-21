@@ -5,11 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$ROOT_DIR/.build"
 OUT_DIR="$ROOT_DIR/artifacts"
 
-if [[ -z "$ROOT_DIR" ]]; then
-  echo "ROOT_DIR must not be empty" >&2
-  exit 1
-fi
-
 if [[ -n "${TREE_SITTER_REPOSITORIES:-}" ]]; then
   read -r -a REPOSITORIES <<<"$TREE_SITTER_REPOSITORIES"
 else
@@ -64,7 +59,11 @@ for repo_path in "${REPOSITORIES[@]}"; do
 
   mapfile -t wasm_files < <(find . -maxdepth 2 -type f -name '*.wasm' -print)
   if [[ "${#wasm_files[@]}" -ne 1 ]]; then
-    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}: ${wasm_files[*]-<none>}" >&2
+    wasm_details="<none>"
+    if [[ "${#wasm_files[@]}" -gt 0 ]]; then
+      wasm_details="${wasm_files[*]}"
+    fi
+    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}: $wasm_details" >&2
     exit 1
   fi
   wasm_file="${wasm_files[0]}"
