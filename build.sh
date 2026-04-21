@@ -39,7 +39,7 @@ for repo_path in "${REPOSITORIES[@]}"; do
 
   wasm_file="$(find . -maxdepth 2 -type f -name '*.wasm' | head -n 1 || true)"
   if [[ -z "$wasm_file" ]]; then
-    echo "No wasm file generated for $repo_path" >&2
+    echo "No wasm file generated for $language_name ($repo_path)" >&2
     exit 1
   fi
 
