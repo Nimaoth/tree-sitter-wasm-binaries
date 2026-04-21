@@ -16,7 +16,6 @@ else
     "tree-sitter/tree-sitter-json"
     "tree-sitter/tree-sitter-python"
     "tree-sitter/tree-sitter-rust"
-    "tree-sitter/tree-sitter-typescript"
     "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown"
     "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown-inline"
   )
