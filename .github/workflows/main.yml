@@ -1,0 +1,49 @@
+name: Build tree-sitter WASM parsers
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Emscripten
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y emscripten
+
+      - name: Install tree-sitter CLI
+        run: cargo install --locked tree-sitter-cli
+
+      - name: Build parser artifacts
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
+
+      - name: Upload parser tar.gz artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tree-sitter-wasm-tarballs
+          path: artifacts/*.tar.gz
+          if-no-files-found: error
+
+      - name: Create release with artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.tar.gz
