@@ -11,15 +11,58 @@ if [[ -n "${TREE_SITTER_REPOSITORIES:-}" ]]; then
   read -r -a REPOSITORIES <<<"$TREE_SITTER_REPOSITORIES"
 else
   REPOSITORIES=(
-    "tree-sitter/tree-sitter-bash"
-    "tree-sitter/tree-sitter-c"
-    "tree-sitter/tree-sitter-cpp"
-    "tree-sitter/tree-sitter-javascript"
-    "tree-sitter/tree-sitter-json"
-    "tree-sitter/tree-sitter-python"
-    "tree-sitter/tree-sitter-rust"
+    "tree-sitter-grammars/tree-sitter-commonlisp",
     "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown"
     "tree-sitter-grammars/tree-sitter-markdown/tree-sitter-markdown-inline"
+    "tree-sitter-grammars/tree-sitter-query",
+    "tree-sitter-grammars/tree-sitter-toml"
+    "tree-sitter-grammars/tree-sitter-xml/xml",
+    "tree-sitter-grammars/tree-sitter-yaml",
+    "tree-sitter/tree-sitter-agda"
+    "tree-sitter/tree-sitter-bash"
+    "tree-sitter/tree-sitter-c"
+    "tree-sitter/tree-sitter-c-sharp",
+    "tree-sitter/tree-sitter-cpp"
+    "tree-sitter/tree-sitter-css"
+    "tree-sitter/tree-sitter-go"
+    "tree-sitter/tree-sitter-haskell"
+    "tree-sitter/tree-sitter-html",
+    "tree-sitter/tree-sitter-java",
+    "tree-sitter/tree-sitter-javascript"
+    "tree-sitter/tree-sitter-jsdoc"
+    "tree-sitter/tree-sitter-json"
+    "tree-sitter/tree-sitter-python"
+    "tree-sitter/tree-sitter-python",
+    "tree-sitter/tree-sitter-ql"
+    "tree-sitter/tree-sitter-regex"
+    "tree-sitter/tree-sitter-ruby"
+    "tree-sitter/tree-sitter-rust"
+    "tree-sitter/tree-sitter-rust",
+    "tree-sitter/tree-sitter-scala"
+
+    "Tudyx/tree-sitter-log",
+    "Wilfred/tree-sitter-elisp",
+    "airbus-cert/tree-sitter-powershell",
+    "alaviss/tree-sitter-nim",
+    "alex-pinkus/tree-sitter-swift"
+    "ap29600/tree-sitter-odin",
+    "dehorsley/tree-sitter-angelscript",
+    "fwcd/tree-sitter-kotlin",
+    "gleam-lang/tree-sitter-gleam",
+    "liamwh/tree-sitter-wit",
+    "maxxnino/tree-sitter-zig",
+    "nix-community/tree-sitter-nix",
+    "tjdevries/tree-sitter-lua",
+    "wenkokke/tree-sitter-talon",
+
+    # "tree-sitter/tree-sitter-typescript/typescript",
+    # "tree-sitter/tree-sitter-typescript/tsx",
+
+    # "tree-sitter/tree-sitter-ocaml/grammars/interface"
+    # "tree-sitter/tree-sitter-ocaml/grammars/ocaml"
+    # "tree-sitter/tree-sitter-ocaml/grammars/type"
+    # "tree-sitter/tree-sitter-php/php"
+    # "tree-sitter/tree-sitter-php/php_only"
   )
 fi
 
