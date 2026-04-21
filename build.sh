@@ -20,6 +20,16 @@ else
   )
 fi
 
+if [[ -z "$WORK_DIR" || -z "$OUT_DIR" || "$WORK_DIR" == "/" || "$OUT_DIR" == "/" ]]; then
+  echo "Refusing to remove unsafe build directories" >&2
+  exit 1
+fi
+
+if [[ "$WORK_DIR" != "$ROOT_DIR/"* || "$OUT_DIR" != "$ROOT_DIR/"* ]]; then
+  echo "Build directories must be inside repository root" >&2
+  exit 1
+fi
+
 rm -rf "$WORK_DIR" "$OUT_DIR"
 mkdir -p "$WORK_DIR" "$OUT_DIR"
 
@@ -39,7 +49,7 @@ for repo_path in "${REPOSITORIES[@]}"; do
 
   mapfile -t wasm_files < <(find . -maxdepth 2 -type f -name '*.wasm' -print)
   if [[ "${#wasm_files[@]}" -ne 1 ]]; then
-    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}" >&2
+    echo "Expected exactly one wasm file for $language_name ($repo_path), found ${#wasm_files[@]}: ${wasm_files[*]-<none>}" >&2
     exit 1
   fi
   wasm_file="${wasm_files[0]}"
